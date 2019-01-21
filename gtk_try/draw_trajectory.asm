@@ -89,60 +89,20 @@ main_loop:
 	cvtsi2ss xmm2, rdx	;#xmm2 = new_x_speed
 	cvtsi2ss xmm3, rcx	;#xmm3 = new_y_speed
 
-;#	cmp rdx, 512
-;#	jge max_x_reached
-
-;# speed
-	mov rax, rdx
-	PRINT_INT
-	mov rax, rcx
-	PRINT_INT
-;# coordinates
-	mov rax, rdi
-	PRINT_INT
-	mov rax, rsi
-	PRINT_INT
 
 	mulss xmm2, xmm1
 	mulss xmm3, xmm1
-;#	movss xmm4, [minus_one]
-;#	mulss xmm3, xmm4		;# zmiana znaku y_speed
-
 	cvtss2si rdx, xmm2	;# rdx = x_speed
 	cvtss2si rcx, xmm3	;# rcx = y_speed
 	mov rax, -1
 	imul rcx, rax
 
-
-
-
-
- ;#speed after multiplication
-;#	mov rax, rdx
-;#	PRINT_INT
-;#	mov rax, rcx
-;#	PRINT_INT
-
-;#	cvtss2si rax, xmm2	;# rdx = x_speed
-;#	PRINT_INT
-;#	cvtss2si rax, xmm3	;# rcx = y_speed
-;#	PRINT_INT
-
+	cmp rcx, 0
+	je max_x_reached
 
 	jmp main_loop
-
-
-
-end:
-	mov rax, 8888
-		PRINT_INT
-
-
 	
 max_x_reached:	
-		mov rax, 22222222
-		PRINT_INT
-
 		add rsp, 80		; release the stack
 	;#epilog
 		pop rbx
@@ -151,83 +111,3 @@ max_x_reached:
 	  ret                        ;# Return control
 
 
-
-
-;# writing values (OLD)
-	mov eax,4            ;# write()
-	mov ebx,1            ;# STDOUT
-	mov ecx,hello
-	mov edx,helloLen
-	int 80h                 ;# Interrupt
-
-
-;#write to buffer
-head:
-	mov rcx, 6
-pop_loop:
-	pop rax
-	push rcx
-	mov	rdi,fmt		;# format for printf  powinno byc n_channels = 3
-	mov	rsi,rax         ; first parameter for printf
-	mov	rdx,rax         ; second parameter for printf
-	mov	rax,0		; no xmm registers
-  call    printf		; Call C function
-	pop rcx
-	loop pop_loop
-
-
-
-;# trajectory bounce tryout
-;# @params:
-;# rdi -> X(0)-coordinate
-;# rsi -> Y(0)-coordinate
-;# rdx -> Vx(0)	=	 speed[x] at the beginning
-;# rcx -> Vy(0)	=	 speed[y] at the beginning
-;# rbp-8  -> pixel_array address
-;##
-	mov rdi, 0
-	mov rsi, 0
-	mov rdx, [rbp-16]
-	mov rcx, [rbp-24]
-
-	  mov r8, [rbp-8]    ;# r8 = pixel buffer address
-
-
-
-  drawing_loop:
-
-		mov rax, rcx
-		PRINT_INT
-
-    add rdx, 0    ;# dx = const
-    add rcx, 1    ;# dy += 1 (g = 10m/s^2)
-
-    add rdi, rdx  ;# x += dx
-    add rsi, rcx  ;# y += dy
-
-    cmp rdi, 250
-    jge max_x_reached
-    cmp rsi, 250
-    jge max_x_reached
-
-	mov r12, rdx
-	mov r13, rcx
-
-;# r10 -> x_coordinate
-;# r11 -> y_coordinate
-;# rdx -> rowstride
-;# rcx -> n_channels
-;# r8 -> pixel_array_address
-		mov r10, rdi
-		mov r11, rsi
-    mov rdx, [rbp-40]     ;#rdx = rowstride
-    mov rcx, [rbp-48]     ;#rcx = n_channels
-
-
-    WRITE_XY
-
-		mov rdx, r12
-		mov rcx, r13
-
-    jmp drawing_loop
-	

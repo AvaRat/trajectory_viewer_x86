@@ -69,6 +69,4 @@ SECTION .TEXT
 
 
 %%max_y_reached:
-  mov rax, 1111111
-  PRINT_INT
   %endmacro
