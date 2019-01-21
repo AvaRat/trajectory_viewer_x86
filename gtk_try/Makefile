@@ -6,8 +6,8 @@ CFLAGS =  -c `pkg-config --cflags --libs gtk+-2.0`
 LFLAGS = `pkg-config --cflags --libs gtk+-2.0`
 NASMFLAGS = -f elf64
 
-C_PROG = image_viewer
-ASM_PROG = fun
+C_PROG = trajectory_viewer
+ASM_PROG = draw_trajectory
 
 OBJS = $(C_PROG).o $(ASM_PROG).o
 

@@ -21,6 +21,35 @@ section .bss
 
 section .text
 
+;# r10 -> x_coordinate
+;# r11 -> y_coordinate
+;# rdx -> rowstride
+;# rcx -> n_channels
+;# r8 -> pixel_array_address
+%macro WRITE_XY 0
+    push rax
+    push rdx
+    push r11
+    push r10
+    push r8
+		mov rax, rdx	;# rax = rowstride
+		mul r11
+		mov r11, rax	;# r11 = rowstride*y
+		mov rax, rcx	;# rax = n_channels
+		mul r10
+		mov r10, rax	;# r10 = n_channels*x
+		add r10, r11	;# r10 = r10 + r11
+		add r8, r10		;# r8 = pixel_array + r10
+		mov dl, 255
+		mov [r8], dl	;# save dl pixel to r8
+    pop r8
+    pop r10
+    pop r11
+    pop rdx
+    pop rax
+%endmacro
+
+
 print_massage:
     mov edx, prompt_len
     mov ecx, prompt
@@ -41,47 +70,63 @@ print_massage:
 
 
  ;   mov eax, 123456789
-;32-bit number is in eax
-%macro PRINT_INT 1
-print_int:
-    mov ecx, 0   ;counter
-    mov edx, 0   ;rest
-    mov ebx, 10  ;
- loop1:
-    cdq
-    idiv ebx      ; Divides eax by 10. edx = rest and eax = next_value
-    add edx, '0'
+;64-bit number is in eax
+%macro PRINT_INT 0
+%%print_int:
+    push rcx
     push rdx
-    inc ecx
-    cmp eax, 10
-    jae loop1
+    push rbx
+    push rax
+    push r8
+    push r9
+    push r10
+    push r11
+    mov rcx, 0   ;counter
+    mov rdx, 0   ;rest
+    mov rbx, 10  ;
+ %%loop1:
+    cdq
+    idiv rbx      ; Divides eax by 10. edx = rest and eax = next_value
+    add rdx, '0'
+    push rdx
+    inc rcx
+    cmp rax, 10
+    jae %%loop1
 
-    add eax, '0'
+    add rax, '0'
     push rax ; save first digit
-    mov [int_out_len], ecx  ; save number of digits
-    xor ebx, ebx    ;ebx = 0
-    inc ecx
-save_int:
+    mov [int_out_len], rcx  ; save number of digits
+    xor rbx, rbx    ;ebx = 0
+    inc rcx
+%%save_int:
     pop rax
-    mov [int_out+ebx], eax
-    inc ebx
-    loop save_int
+    mov [int_out+rbx], rax
+    inc rbx
+    loop %%save_int
 
-    mov eax, 1
-    sub [int_out_len], eax
+    mov rax, 1
+    sub [int_out_len], rax
 
-print:
-    mov edx, int_out_len
-    mov ecx, int_out
-    mov ebx, 1
-    mov eax, 4
+%%print:
+    mov rdx, int_out_len
+    mov rcx, int_out
+    mov rbx, 1
+    mov rax, 4
     int 0x80
 
-    mov edx, enter_len
-    mov ecx, enter
-    mov ebx, 1
-    mov eax, 4
+    mov rdx, enter_len
+    mov rcx, enter
+    mov rbx, 1
+    mov rax, 4
     int 0x80
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rax
+    pop rbx
+    pop rdx
+    pop rcx
 
 %endmacro
 
