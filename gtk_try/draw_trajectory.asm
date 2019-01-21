@@ -85,7 +85,26 @@ main_loop:
 ;# xmm2 rdx -> Vx(0)	=	 speed[x] at the end
 ;# xmm3 rcx -> Vy(0)	=	 speed[y] at the end
 
-	mov rsi, 254
+	mov rsi, 510
+	mov r12, rdx
+	mov r13, rcx
+;# write one point where ball touch the ground for visualization purposes
+;# r10 -> x_coordinate
+;# r11 -> y_coordinate
+;# rdx -> rowstride
+;# rcx -> n_channels
+;# r8 -> pixel_array_address
+		mov r10, rdi
+		mov r11, rsi
+    mov rdx, [rbp-40]     ;#rdx = rowstride
+    mov rcx, [rbp-48]     ;#rcx = n_channels
+
+    WRITE_XY
+
+		mov rdx, r12
+		mov rcx, r13
+
+
 	cvtsi2ss xmm2, rdx	;#xmm2 = new_x_speed
 	cvtsi2ss xmm3, rcx	;#xmm3 = new_y_speed
 

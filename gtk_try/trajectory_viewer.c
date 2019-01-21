@@ -56,11 +56,9 @@ static void button_callback( GtkWidget *widget, gpointer   data )
     struct pr *parser = data;
     GError *error = NULL;
     GdkPixbuf *image_buff;
-    printf("ok\n");
     GtkImage *image = (parser->img_ptr);
-    int width = 520;
-    int height = 270;
-    printf("ok\n");
+    int width = 1024;
+    int height = 512;
     image_buff = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, width, height);
 
     for(int y=0; y < height; ++y)
@@ -70,15 +68,15 @@ static void button_callback( GtkWidget *widget, gpointer   data )
             put_pixel(image_buff, x, y, 0, 0, 0);
         }
     }
-    printf("ok\n");
+    g_assert(gtk_image_get_storage_type(image) == GTK_IMAGE_PIXBUF);
+
     int64_t x_s = parser->x_speed;
     int64_t y_s = parser->y_speed;
     int64_t b_p = parser->speed_loss_on_bounce;
     int64_t rowside = gdk_pixbuf_get_rowstride (image_buff);
     int64_t n_channels =  gdk_pixbuf_get_n_channels (image_buff);
 
-    printf("%ld\t %ld\t %ld\n", x_s, y_s, b_p);
- //   printf("rowstride: %ld\n", rowside);
+    printf("arguments in draw function:\n%ld\t %ld\t %ld\n", x_s, y_s, b_p);
     draw(gdk_pixbuf_get_pixels (image_buff), x_s, y_s, b_p, rowside, n_channels);
     
     if(!image_buff)
@@ -87,10 +85,10 @@ static void button_callback( GtkWidget *widget, gpointer   data )
         g_error_free(error);
         return ;
     }
-    printf("after_ draw function\n");
     gtk_image_set_from_pixbuf(image, image_buff);
  //   image = gtk_image_new_from_pixbuf(image_buff);
  //   gtk_widget_show (image);
+ 
 }
 
 static void x_scale_moved(GtkRange *range, gpointer data) 
@@ -103,52 +101,11 @@ static void x_scale_moved(GtkRange *range, gpointer data)
 
 static void y_scale_moved (GtkRange *range, gpointer  data)
 {
-  //  struct pr parser = *data;
-  //  struct pr *parser = data;
-    GError *error = NULL;
-    GdkPixbuf *image_buff;
-    printf("ok\n");
-    GtkImage *image = data;
-    int width = 520;
-    int height = 256;
-    printf("ok\n");
-    image_buff = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, width, height);
-
-    for(int y=0; y < height; ++y)
-    {
-        for(int x=0; x< width; ++x)
-        {
-            put_pixel(image_buff, x, y, 0, 0, 0);
-        }
-    }
-    printf("ok\n");
-    int64_t x_s = 10;
-    int64_t y_s = (int64_t) gtk_range_get_value(range);
-    int64_t b_p = 20;
-    int64_t rowside = gdk_pixbuf_get_rowstride (image_buff);
-    int64_t n_channels =  gdk_pixbuf_get_n_channels (image_buff);
-
-    printf("%ld\t %ld\t %ld\n", x_s, y_s, b_p);
- //   printf("rowstride: %ld\n", rowside);
-    draw(gdk_pixbuf_get_pixels (image_buff), x_s, y_s, b_p, rowside, n_channels);
-    
-    if(!image_buff)
-    {
-        fprintf(stderr, "%s\n", error->message);
-        g_error_free(error);
-        return ;
-    }
-    printf("after_ draw function\n");
-    gtk_image_set_from_pixbuf(image, image_buff);
- //   image = gtk_image_new_from_pixbuf(image_buff);
- //   gtk_widget_show (image);
-}
-    /*
     struct pr *parser = data;
    // printf("y_scale moved\n");
     int64_t a = gtk_range_get_value(range);
     parser->y_speed = a;
-    */
+}
 
 
 static void b_scale_moved(GtkRange *range, gpointer  data)
@@ -176,6 +133,7 @@ create_image (void)
                     G_CALLBACK (button_press_callback),
                     image);
 */
+
   return image;
 }
 
@@ -192,9 +150,9 @@ int create_stuff()
     GtkWidget *hscale1;
     GtkWidget *hscale2;
     GtkWidget *hscale3;
-    GtkObject *adj1;
-    GtkObject *adj2;
-    GtkObject *adj3;
+    GtkObject *adj_x;
+    GtkObject *adj_y;
+    GtkObject *adj_b;
 
     GtkWidget *event_box;
     GdkPixbuf *icon;
@@ -217,9 +175,9 @@ int create_stuff()
     GtkWidget *b_label;
     GtkWidget *b_scale;
 
-    adj1 = gtk_adjustment_new (0.0, 0.0, 10.0, 0.1, 1.0, 1.0);
-    adj2 = gtk_adjustment_new (1.0, 1.0, 10.0, 0.7, 1.0, 1.0);
-    adj3 = gtk_adjustment_new (0.0, 0.0, 100.0, 0.1, 1.0, 1.0);
+    adj_x = gtk_adjustment_new (0.0, 0.0, 20.0, 1.0, 1.0, 1.0);
+    adj_y = gtk_adjustment_new (1.0, 1.0, 20.0, 1.0, 1.0, 1.0);
+    adj_b = gtk_adjustment_new (20, 0.0, 100.0, 0.1, 1.0, 1.0);
 
     icon = gdk_pixbuf_new_from_file("trajectory_icon.png", &error);
     if(!icon)
@@ -262,11 +220,6 @@ int create_stuff()
     gtk_box_pack_start (GTK_BOX(sliders_box), button, TRUE, TRUE, 0);
     gtk_widget_show(button);
 
-
-
-
-
-
     // x_speed scale
     box_x = gtk_vbox_new (FALSE, 5);
     gtk_container_set_border_width (GTK_CONTAINER (box_x), 10);
@@ -274,7 +227,7 @@ int create_stuff()
     const gchar *x_label_text = "speed in x direction";
     x_label = gtk_label_new(x_label_text);
 
-    x_scale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
+    x_scale = gtk_hscale_new (GTK_ADJUSTMENT (adj_x));
     scale_set_default_values (GTK_SCALE (x_scale));
 
   //  gtk_misc_set_alignment (GTK_MISC(label_x), 0, 0);
@@ -294,7 +247,7 @@ int create_stuff()
     const gchar *y_label_text = "speed in y direction";
     y_label = gtk_label_new(y_label_text);
 
-    y_scale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
+    y_scale = gtk_hscale_new (GTK_ADJUSTMENT (adj_y));
     scale_set_default_values (GTK_SCALE (y_scale));
 
   //  gtk_misc_set_alignment (GTK_MISC(label_x), 0, 0);
@@ -315,7 +268,7 @@ int create_stuff()
     const gchar *b_label_text = "speed lost on bounce[%]";
     b_label = gtk_label_new(b_label_text);
 
-    b_scale = gtk_hscale_new (GTK_ADJUSTMENT (adj3));
+    b_scale = gtk_hscale_new (GTK_ADJUSTMENT (adj_b));
     scale_set_default_values (GTK_SCALE (b_scale));
 
   //  gtk_misc_set_alignment (GTK_MISC(label_x), 0, 0);
@@ -334,13 +287,17 @@ int create_stuff()
     int *a;
     int b = 99;
     a = &b;
-    struct pr p_;
+ static struct pr p_;
     p_.img_ptr = GTK_IMAGE(image);
+
+    p_.speed_loss_on_bounce = gtk_range_get_value(GTK_RANGE(b_scale));
+
+    g_assert(gtk_image_get_storage_type(GTK_IMAGE(image)) == GTK_IMAGE_PIXBUF);
     struct pr *parser = &p_;
 
     g_signal_connect (x_scale, "value-changed", G_CALLBACK(x_scale_moved), parser);
 
-    g_signal_connect (y_scale, "value-changed", G_CALLBACK(y_scale_moved), image);
+    g_signal_connect (y_scale, "value-changed", G_CALLBACK(y_scale_moved), parser);
 
     g_signal_connect (b_scale, "value-changed", G_CALLBACK(b_scale_moved), parser);
 

@@ -35,9 +35,9 @@ SECTION .TEXT
     add rdi, rdx  ;# x += dx
     add rsi, rcx  ;# y += dy
 
-    cmp rdi, 512
+    cmp rdi, 1024
     jge max_x_reached
-    cmp rsi, 255
+    cmp rsi, 510
     jge %%max_y_reached
     cmp rsi, 0
     jle %%max_y_reached
