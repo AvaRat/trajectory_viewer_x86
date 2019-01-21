@@ -1,4 +1,8 @@
 MIPS/
-/practise
-/gtk_try
-/Documents
+practise/
+gtk_try/
+Documents/
+
+src/trajectory_viewer.o
+src/trajectory_viewer
+

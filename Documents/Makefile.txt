@@ -1,7 +1,0 @@
-CC = gcc  
-
-all: main.o 
-  $(CC) main.o -o test
-
-main.o: main.c f.h
-  $(CC) main.c -c -o main.o
