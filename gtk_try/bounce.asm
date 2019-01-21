@@ -55,7 +55,6 @@ SECTION .TEXT
     mov rdx, [rbp-40]     ;#rdx = rowstride
     mov rcx, [rbp-48]     ;#rcx = n_channels
 
-
     WRITE_XY
 
 		mov rdx, r12

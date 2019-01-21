@@ -5,7 +5,7 @@ extern scanf
 SECTION .DATA
 	hello:     db 'read by assembly:',10
 	helloLen:  equ $-hello
-	fmt:    db " %f", 10, 0	;# The printf format, "\n",'0'
+	fmt:    db " %ld", 10, 0	;# The printf format, "\n",'0'
 	pixel_addres: dq 64
 	x_speed: dq 64
 	y_speed: dq 64
@@ -62,14 +62,14 @@ draw:
 	push r13	;# rbp-80
 
 
-
-
-
-main_loop:
-
 	cvtss2si rdx, xmm2	;# rdx = x_speed
 	cvtss2si rcx, xmm3	;# rcx = y_speed
 
+	xor rdi, rdi
+	xor rsi, rsi
+
+
+main_loop:
 
 ;# @params:
 ;# rdi -> X(0)-coordinate
@@ -77,13 +77,15 @@ main_loop:
 ;# xmm2 -> Vx(0)	=	 speed[x] at the beginning
 ;# xmm3 -> Vy(0)	=	 speed[y] at the beginning
 ;# rbp-8  -> pixel_array address
-	mov rdi, 0
-	mov rsi, 0
+;#	mov rdi, 0
+;#	mov rsi, 0
 	DRAW_UNTIL_HIT
 ;# rdi -> X(0)- last x coordinate
 ;# rsi -> Y(0)-last y coordinate
 ;# xmm2 rdx -> Vx(0)	=	 speed[x] at the end
 ;# xmm3 rcx -> Vy(0)	=	 speed[y] at the end
+
+	mov rsi, 254
 	cvtsi2ss xmm2, rdx	;#xmm2 = new_x_speed
 	cvtsi2ss xmm3, rcx	;#xmm3 = new_y_speed
 
@@ -108,16 +110,18 @@ main_loop:
 
 	cvtss2si rdx, xmm2	;# rdx = x_speed
 	cvtss2si rcx, xmm3	;# rcx = y_speed
-	mov r14, rdx
 	mov rax, -1
-	imul rcx
+	imul rcx, rax
 
 
-;# speed after multiplication
-	mov rax, rdx
-	PRINT_INT
-	mov rax, rcx
-	PRINT_INT
+
+
+
+ ;#speed after multiplication
+;#	mov rax, rdx
+;#	PRINT_INT
+;#	mov rax, rcx
+;#	PRINT_INT
 
 ;#	cvtss2si rax, xmm2	;# rdx = x_speed
 ;#	PRINT_INT
@@ -125,11 +129,13 @@ main_loop:
 ;#	PRINT_INT
 
 
-;	jmp main_loop
+	jmp main_loop
 
 
 
-
+end:
+	mov rax, 8888
+		PRINT_INT
 
 
 	
