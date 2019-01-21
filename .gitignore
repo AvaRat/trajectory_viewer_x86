@@ -5,4 +5,5 @@ Documents/
 
 src/trajectory_viewer.o
 src/trajectory_viewer
+src/draw_trajectory.o
 
